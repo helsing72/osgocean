@@ -1,9 +1,9 @@
 /*
 * This source file is part of the osgOcean library
-* 
+*
 * Copyright (C) 2009 Kim Bale
 * Copyright (C) 2009 The University of Hull, UK
-* 
+*
 * This program is free software; you can redistribute it and/or modify it under
 * the terms of the GNU Lesser General Public License as published by the Free Software
 * Foundation; either version 3 of the License, or (at your option) any later
@@ -83,10 +83,14 @@ namespace osgOcean
     {
     }
 
-    osg::BoundingBox MipmapGeometryVBO::computeBound( void ) const 
+#if OSG_VERSION_LESS_THAN(3,4,0)
+    osg::BoundingBox MipmapGeometryVBO::computeBound( void ) const
+#else
+    osg::BoundingBox MipmapGeometryVBO::computeBoundingBox( void ) const
+#endif
     {
         osg::BoundingBox bb;
-        
+
         bb.xMin() = _offset.x();
         bb.xMax() = _offset.x()+_worldSize;
         bb.yMin() = _offset.y()-_worldSize;
@@ -110,13 +114,13 @@ namespace osgOcean
 
     bool MipmapGeometryVBO::checkPrimitives( unsigned int level, unsigned int levelRight, unsigned int levelBelow )
     {
-#ifndef NDEBUG 
-        if( abs( (int)level-(int)levelRight) > 1 || 
+#ifndef NDEBUG
+        if( abs( (int)level-(int)levelRight) > 1 ||
             abs( (int)level-(int)levelBelow) > 1 )
-        {   
+        {
             osg::notify(osg::WARN) << "osgOcean::MipmapGeometryVBO() - Mipmap level difference is greater than 1" << std::endl;
         }
-#endif 
+#endif
 
         bool updateMain  = _level      == (int)level      ? false : true;
         bool updateRight = _levelRight == (int)levelRight ? false : true;
@@ -135,7 +139,7 @@ namespace osgOcean
         _resBelow   = calcResolution(_levelBelow, _numLevels);
 
         // if the resolution is 1 and there is an update in any of the
-        // border or body pieces then we must recompute the zero tile 
+        // border or body pieces then we must recompute the zero tile
         // due to the tessellation.
         if( _resolution == 1 )
         {
@@ -158,7 +162,7 @@ namespace osgOcean
             }
             return true;
         }
-        
+
         // if we don't do a main body update then we must require
         // a border/corner update.
         if(_resRight == 1 || _resBelow == 1){
@@ -167,13 +171,13 @@ namespace osgOcean
         }
         else{
             // requires the additional check here because adding a zero corner piece
-            // leaves the border pieces empty 
+            // leaves the border pieces empty
             if( updateRight || _rightBorder.size() == 0)
                 addRightBorder();
             if( updateBelow || _belowBorder.size() == 0)
                 addBottomBorder();
 
-            addCornerPiece(); 
+            addCornerPiece();
 
             return true;
         }
@@ -193,11 +197,11 @@ namespace osgOcean
 
         _mainBody.clear();
 
-        // Degenerate triangles seem to cause problems on some cards so leave the original 
+        // Degenerate triangles seem to cause problems on some cards so leave the original
         // version in here. The degenerate version does appear to provide a noticeable
         // difference in draw time.
 #ifdef NO_DEGENERATE_TRIANGLES
-        
+
         _mainBody.resize(_resolution-1);
 
         unsigned indices =_resolution*2;
@@ -335,15 +339,15 @@ namespace osgOcean
 
         unsigned inc      = _maxResolution / _resolution;
         unsigned incBelow = _maxResolution / _resBelow;
-        
+
          // same res to the right
         if(_level == _levelBelow )
         {
             unsigned indicies = (_rowLen-1)*2;
             //unsigned indicies = _maxResolution/inc*2;
-            
+
             osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_STRIP, indicies);
-            
+
             int i = 0;
             for(unsigned c = 0; c < _maxResolution; c+=inc)
             {
@@ -355,12 +359,12 @@ namespace osgOcean
         }
         // lower res to the right
         else if(_level < _levelBelow )
-        { 
+        {
             unsigned colLimit = _maxResolution-incBelow;
 
             for( unsigned int c = 0; c < colLimit; c+=incBelow )
             {
-                osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_FAN, 5 );   
+                osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_FAN, 5 );
 
                 (*primitive)[0] = getIndex(c,           _maxResolution     );
                 (*primitive)[1] = getIndex(c+incBelow,  _maxResolution     );
@@ -378,7 +382,7 @@ namespace osgOcean
 
             for( unsigned int c = 0; c < colLimit; c+=inc )
             {
-                osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_FAN, 5 );   
+                osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_FAN, 5 );
 
                 (*primitive)[0] = getIndex(c+inc,       _maxResolution-inc );
                 (*primitive)[1] = getIndex(c,           _maxResolution-inc );
@@ -421,12 +425,12 @@ namespace osgOcean
         }
         // lower res to the right
         else if(_level < _levelRight )
-        {   
+        {
             unsigned rowLimit = _maxResolution-incRight;
-            
+
             for( unsigned r = 0; r < rowLimit; r+=incRight )
             {
-                osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_FAN, 5 );   
+                osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt( osg::PrimitiveSet::TRIANGLE_FAN, 5 );
 
                 (*primitive)[0] = getIndex(_maxResolution,      r          );
                 (*primitive)[1] = getIndex(_maxResolution-inc,  r          );
@@ -451,7 +455,7 @@ namespace osgOcean
                 (*primitive)[2] = getIndex(_maxResolution,     r+incRight );
                 (*primitive)[3] = getIndex(_maxResolution,     r          );
                 (*primitive)[4] = getIndex(_maxResolution-inc, r          );
-                
+
                 _rightBorder.push_back( primitive );
             }
         }
@@ -479,16 +483,16 @@ namespace osgOcean
         else if( _levelBelow >= _level && _levelRight <= _level )
         {
             osg::DrawElementsUInt* primitive = new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLE_FAN, 0);
-            
+
             primitive->push_back( getIndex( _maxResolution - incBelow, _maxResolution ) );
             primitive->push_back( getIndex( _maxResolution,            _maxResolution ) );
-            
+
             for(int r = _maxResolution; r >= int(_maxResolution-inc); r-=incRight )
                 primitive->push_back( getIndex( _maxResolution, r ) );
 
             for(int c = _maxResolution; c >= int(_maxResolution-incBelow); c-=inc )
                 primitive->push_back( getIndex( c, _maxResolution-inc ) );
-            
+
             _cornerPiece.push_back(primitive);
         }
         else if(_levelBelow < _level && _levelRight > _level)
@@ -549,4 +553,3 @@ namespace osgOcean
         _primitives.insert( _primitives.end(), _cornerPiece.begin(), _cornerPiece.end() );
     }
 }
-

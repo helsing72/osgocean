@@ -1,13 +1,13 @@
-/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2006 Robert Osfield 
+/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2006 Robert Osfield
 *
-* This library is open source and may be redistributed and/or modified under  
-* the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or 
+* This library is open source and may be redistributed and/or modified under
+* the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or
 * (at your option) any later version.  The full license is in LICENSE file
 * included with this distribution, and on the openscenegraph.org website.
-* 
+*
 * This library is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * OpenSceneGraph Public License for more details.
 */
 
@@ -98,7 +98,7 @@ static osg::Image* createSpotLightImage(const osg::Vec4& centerColour, const osg
     }
 
     return image;
-#endif    
+#endif
 }
 
 
@@ -136,20 +136,20 @@ void SiltEffect::setIntensity(float intensity)
 SiltEffect::SiltEffect(const SiltEffect& copy, const osg::CopyOp& copyop):
 osg::Node(copy,copyop)
 {
-    setNumChildrenRequiringUpdateTraversal(getNumChildrenRequiringUpdateTraversal()+1);            
+    setNumChildrenRequiringUpdateTraversal(getNumChildrenRequiringUpdateTraversal()+1);
     _dirty = true;
     update();
 }
 
 void SiltEffect::compileGLObjects(osg::RenderInfo& renderInfo) const
 {
-    if (_quadGeometry.valid()) 
+    if (_quadGeometry.valid())
     {
         _quadGeometry->compileGLObjects(renderInfo);
         if (_quadGeometry->getStateSet()) _quadGeometry->getStateSet()->compileGLObjects(*renderInfo.getState());
     }
 
-    if (_pointGeometry.valid()) 
+    if (_pointGeometry.valid())
     {
         _pointGeometry->compileGLObjects(renderInfo);
         if (_pointGeometry->getStateSet()) _pointGeometry->getStateSet()->compileGLObjects(*renderInfo.getState());
@@ -233,14 +233,14 @@ void SiltEffect::traverse(osg::NodeVisitor& nv)
         if (!SiltDrawableSet->_quadSiltDrawable->getCurrentCellMatrixMap().empty())
         {
             cv->pushStateSet(SiltDrawableSet->_quadSiltDrawable->getStateSet());
-            cv->addDrawableAndDepth(SiltDrawableSet->_quadSiltDrawable.get(),cv->getModelViewMatrix(),depth);    
+            cv->addDrawableAndDepth(SiltDrawableSet->_quadSiltDrawable.get(),cv->getModelViewMatrix(),depth);
             cv->popStateSet();
         }
 
         if (!SiltDrawableSet->_pointSiltDrawable->getCurrentCellMatrixMap().empty())
         {
             cv->pushStateSet(SiltDrawableSet->_pointSiltDrawable->getStateSet());
-            cv->addDrawableAndDepth(SiltDrawableSet->_pointSiltDrawable.get(),cv->getModelViewMatrix(),depth);    
+            cv->addDrawableAndDepth(SiltDrawableSet->_pointSiltDrawable.get(),cv->getModelViewMatrix(),depth);
             cv->popStateSet();
         }
 
@@ -276,7 +276,7 @@ void SiltEffect::update()
     {
         OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
         _viewDrawableMap.clear();
-    }    
+    }
 
     // set up state/
     {
@@ -316,8 +316,8 @@ void SiltEffect::update()
     }
 }
 
-void SiltEffect::createGeometry(unsigned int numParticles, 
-                                          osg::Geometry* quad_geometry, 
+void SiltEffect::createGeometry(unsigned int numParticles,
+                                          osg::Geometry* quad_geometry,
                                           osg::Geometry* point_geometry )
 {
     // particle corner offsets
@@ -431,7 +431,7 @@ void SiltEffect::setUpGeometries(unsigned int numParticles)
         needGeometryRebuild = true;
     }
 
-    if (needGeometryRebuild) 
+    if (needGeometryRebuild)
     {
         createGeometry(numParticles, _quadGeometry.get(), _pointGeometry.get());
     }
@@ -445,9 +445,9 @@ void SiltEffect::setUpGeometries(unsigned int numParticles)
         static const char osgOcean_silt_quads_vert_file[] = "osgOcean_silt_quads.vert";
 	    static const char osgOcean_silt_quads_frag_file[] = "osgOcean_silt_quads.frag";
 
-        osg::Program* program = 
-            ShaderManager::instance().createProgram("silt_quads", 
-                                                    osgOcean_silt_quads_vert_file, osgOcean_silt_quads_frag_file, 
+        osg::Program* program =
+            ShaderManager::instance().createProgram("silt_quads",
+                                                    osgOcean_silt_quads_vert_file, osgOcean_silt_quads_frag_file,
                                                     osgOcean_silt_quads_vert,      osgOcean_silt_quads_frag );
         _quadStateSet->setAttribute(program);
     }
@@ -459,9 +459,9 @@ void SiltEffect::setUpGeometries(unsigned int numParticles)
         static const char osgOcean_silt_points_vert_file[] = "osgOcean_silt_points.vert";
 	    static const char osgOcean_silt_points_frag_file[] = "osgOcean_silt_points.frag";
 
-        osg::Program* program = 
-            ShaderManager::instance().createProgram("silt_point", 
-                                                    osgOcean_silt_points_vert_file, osgOcean_silt_points_frag_file, 
+        osg::Program* program =
+            ShaderManager::instance().createProgram("silt_point",
+                                                    osgOcean_silt_points_vert_file, osgOcean_silt_points_frag_file,
                                                     osgOcean_silt_points_vert,      osgOcean_silt_points_frag );
         _pointStateSet->setAttribute(program);
 
@@ -483,7 +483,7 @@ void SiltEffect::cull(SiltDrawableSet& pds, osgUtil::CullVisitor* cv) const
     float cellVolume = _cellSize.x() * _cellSize.y() * _cellSize.z();
     int numberOfParticles = (int)(_maximumParticleDensity * cellVolume);
 
-    if (numberOfParticles==0) 
+    if (numberOfParticles==0)
         return;
 
     pds._quadSiltDrawable->setNumberOfVertices(numberOfParticles*4);
@@ -540,9 +540,9 @@ void SiltEffect::cull(SiltDrawableSet& pds, osgUtil::CullVisitor* cv) const
                 float startTime = (float)(i)*iCyle + (float)(j)*jCyle;
                 startTime = (startTime-floor(startTime))*_period;
 
-                if (build(eyeLocal, i,j,k, startTime, pds, frustum, cv)) 
+                if (build(eyeLocal, i,j,k, startTime, pds, frustum, cv))
                     ++numInFrustum;
-                
+
                 ++numTested;
             }
         }
@@ -565,7 +565,7 @@ bool SiltEffect::build(const osg::Vec3 eyeLocal, int i, int j, int k, float star
     osg::BoundingBox bb(position.x(), position.y(), position.z()+scale.z(),
         position.x()+scale.x(), position.y()+scale.y(), position.z());
 
-    if ( !frustum.contains(bb) ) 
+    if ( !frustum.contains(bb) )
         return false;
 
     osg::Vec3 center = position + scale*0.5f;
@@ -575,18 +575,18 @@ bool SiltEffect::build(const osg::Vec3 eyeLocal, int i, int j, int k, float star
 
     if (distance < _nearTransition)
     {
-        SiltDrawable::DepthMatrixStartTime& mstp 
+        SiltDrawable::DepthMatrixStartTime& mstp
             = pds._quadSiltDrawable->getCurrentCellMatrixMap()[SiltDrawable::Cell(i,k,j)];
-        
+
         mstp.depth = distance;
         mstp.startTime = startTime;
         mymodelview = &mstp.modelview;
     }
     else if (distance <= _farTransition)
     {
-        SiltDrawable::DepthMatrixStartTime& mstp 
+        SiltDrawable::DepthMatrixStartTime& mstp
             = pds._pointSiltDrawable->getCurrentCellMatrixMap()[SiltDrawable::Cell(i,k,j)];
-        
+
         mstp.depth = distance;
         mstp.startTime = startTime;
         mymodelview = &mstp.modelview;
@@ -602,7 +602,7 @@ bool SiltEffect::build(const osg::Vec3 eyeLocal, int i, int j, int k, float star
     (OPENSCENEGRAPH_MAJOR_VERSION == 2 && OPENSCENEGRAPH_MINOR_VERSION > 7) || \
     (OPENSCENEGRAPH_MAJOR_VERSION == 2 && OPENSCENEGRAPH_MINOR_VERSION == 7 && OPENSCENEGRAPH_PATCH_VERSION >= 3)
 
-    // preMultTranslate and preMultScale introduced in rev 8868, which was 
+    // preMultTranslate and preMultScale introduced in rev 8868, which was
     // before OSG 2.7.3.
     mymodelview->preMultTranslate(position);
     mymodelview->preMultScale(scale);
@@ -648,7 +648,11 @@ void SiltEffect::SiltDrawable::drawImplementation(osg::RenderInfo& renderInfo) c
 {
     if (!_geometry) return;
 
+#if OSG_VERSION_LESS_THAN(3,4,0)
     const osg::Geometry::Extensions* extensions = osg::Geometry::getExtensions(renderInfo.getContextID(),true);
+#else
+    const osg::GLExtensions* extensions = osg::GLExtensions::Get(renderInfo.getContextID(),true);
+#endif
 
     glPushMatrix();
 
